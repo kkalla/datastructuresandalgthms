@@ -30,6 +30,62 @@ void Thread::setDuration(int y){
 
 
 
+
+void SiftDown(vector<Thread> threads, int i){
+	int minIndex = i;
+	int l = 2*i+1;
+	int size = threads.size();
+	if(l<=size && threads[l].getDuration()<threads[minIndex].getDuration())
+		minIndex = l;
+	int r = 2*i + 2;
+	if(r<=size && threads[r].getDuration()<threads[minIndex].getDuration())
+		minIndex = r;
+	if(i!=minIndex){
+		std::swap(threads[i],threads[minIndex]);
+		return SiftDown(threads,minIndex);
+	}
+}
+
+
+void BuildHeap(vector<Thread> threads){
+	int size = threads.size();
+	for(int i=size/2;i>-1;i--)
+		SiftDown(threads, i);
+}
+
+void SiftUp(vector<Thread> threads, int size){
+	while(size>0 && 
+	threads[(size-1)/2].getDuration()<threads[size].getDuration()){
+		std::swap(threads[(size-1)/2],threads[size]);
+		size = (size-1)/2;
+	}
+}
+
+Thread ExtractMin(vector<Thread> threads_){
+	int threads_size = threads_.size();
+	Thread result = threads_[0];
+	threads_[0] = threads_[threads_size];
+	threads_size -= 1;
+	threads_.resize(threads_size);
+	SiftDown(threads_,0);
+	return result;
+}
+
+int GetMin(vector<Thread> threads_){
+	int result = threads_[0].getDuration();
+	return result;
+}
+
+void Insert(vector<Thread> threads_, Thread thread){
+	threads_.push_back(thread);
+	int size = threads_.size();
+	SiftUp(threads_,size);
+}
+
+
+
+
+
 class JobQueue {
  private:
   int num_workers_;
@@ -45,60 +101,6 @@ class JobQueue {
       cout << assigned_workers_[i] << " " << start_times_[i] << "\n";
     }
   }
-
-
-
-void SiftDown(int i){
-	int minIndex = i;
-	int l = 2*i+1;
-	int size = threads_.size();
-	if(l<=size && threads_[l].getDuration()<threads_[minIndex].getDuration())
-		minIndex = l;
-	int r = 2*i + 2;
-	if(r<=size && threads_[r].getDuration()<threads_[minIndex].getDuration())
-		minIndex = r;
-	if(i!=minIndex){
-		std::swap(threads_[i],threads_[minIndex]);
-		return SiftDown(minIndex);
-	}
-}
-
-
-void BuildHeap(vector<Thread> threads){
-	int size = threads.size();
-	for(int i=size/2;i>0;i--)
-		SiftDown(i);
-}
-
-void SiftUp(int size){
-	while(size>0 && 
-	threads_[(size-1)/2].getDuration()<threads_[size].getDuration()){
-		std::swap(threads_[(size-1)/2],threads_[size]);
-		size = (size-1)/2;
-	}
-}
-
-Thread ExtractMin(){
-	int threads_size = threads_.size();
-	Thread result = threads_[0];
-	threads_[0] = threads_[threads_size];
-	threads_size -= 1;
-	threads_.resize(threads_size);
-	SiftDown(0);
-	return result;
-}
-
-int GetMin(){
-	Thread result_Thread = threads_[0];
-	int result = result_Thread.getDuration();
-	return result;
-}
-
-void Insert(Thread thread){
-	threads_.push_back(thread);
-	int size = threads_.size();
-	SiftUp(size);
-}
 
 
 
@@ -148,16 +150,6 @@ void Insert(Thread thread){
 		  remain_jobs -= unassigned_workers_.size();
 	  }
 
-
-
-
-
-
-			  
-
-
-
-
     // TODO: replace this code with a faster algorithm.
     /*assigned_workers_.resize(jobs_.size());
     start_times_.resize(jobs_.size());
@@ -180,7 +172,7 @@ void Insert(Thread thread){
   void Solve() {
     ReadData();
     AssignJobs();
-    //WriteResponse();
+    WriteResponse();
   }
 };
 
